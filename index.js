@@ -1,13 +1,3 @@
-const cellBlocks = document.querySelectorAll('div[data-block="cell"]');
-let currentIcon = 'cross';
-const xmarkString = '<i class="fa-solid fa-xmark"></i>';
-const xmarkMem = [];
-
-const circleString = '<i class="fa-regular fa-circle"></i>';
-const circleMem = [];
-
-let clickCount = 0;
-
 const winningSequences = [
     [1, 2, 3],
     [4, 5, 6],
@@ -19,86 +9,66 @@ const winningSequences = [
 
     [1, 5, 9],
     [3, 5, 7]
-]
+];
 
-function getIconContainer(iconType) {
-    const resultDiv = document.createElement('div');
-    resultDiv.innerHTML = 
-        iconType === 'cross'
-            ? xmarkString // if type -> cross
-            : circleString; // if type -> circle
-    
-    resultDiv.classList.add(
-        'h-[200px]',
-        'w-[200px]',
-        'text-[150px]',
-        'flex',
-        'justify-center',
-        'items-center'
-    );
+const xElement = `<svg class="h-[100px] text-red-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z"/></svg>`;
 
-    return resultDiv;
-}
+const oElement = `<svg class="h-[100px] text-blue-700" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M224 96a160 160 0 1 0 0 320 160 160 0 1 0 0-320zM448 256A224 224 0 1 1 0 256a224 224 0 1 1 448 0z"/></svg>`;
 
-function toggleIcon () {
-    currentIcon = currentIcon === 'cross' ? 'circle' : 'cross';
-}
+const xSequence = [];
+const oSequence = [];
+let currentPlayer = "x";
 
-function postMem(iconType, dataLocation) {
-    if (iconType === 'cross') {
-        xmarkMem.push(dataLocation);
-        console.log(`xMem: ${xmarkMem}`);
+const ordinateNodes = document.querySelectorAll('[ordinate]');
+const gameStartButton = document.querySelector('[game-start]');
+const playerButtons = document.querySelectorAll('[player]');
+const conclusionSection = document.querySelector('[conclusion-section]');
 
-    } else if (iconType === 'circle') {
-        circleMem.push(dataLocation);
-        console.log(`circleMem: ${circleMem}`);
+playerButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+        playerButton = event.target;
+        currentPlayer = playerButton.getAttribute('player');
+
+        const playerSelection = document.querySelector('[player-selection]');
+        playerSelection.classList.add('hidden');
+
+        gameStartButton.classList.remove('hidden');
+    })
+})
+
+let gameActive = false;
+
+gameStartButton.addEventListener('click', (event) => {
+    if (!gameActive) {
+        var btn = event.target;
+        const logoElement = btn.children[0];
+        logoElement.classList.remove('text-[0px]', 'ml-[-2px]', 'opacity-0');
+        logoElement.classList.add('text-[20px]', 'ml-4', 'opacity-100');
+
+        btn.innerText = `Game Active`;
+        btn.appendChild(logoElement);
+
+        btn.classList.remove('bg-green-600', 'hover:bg-green-700', 'active:px-8', 'active:py-2', 'active:h-[50px]', 'active:bg-green-500', 'active:rounded-none');
+        btn.classList.add('bg-sky-600', 'hover:bg-gray-400');
+
+        const mainContent = document.querySelector('main');
+        mainContent.style.display = 'block';
+
+        gameActive = true;
     }
-}
-
-function deepEqual(sequence, mem) {
-    console.log(`seq:${sequence} mem:${mem}`);
-    if (mem.length < 3) {return false;}
-    return sequence.every((seqChunk) => mem.includes());
-}
-
-function checkForWinner() {
-    let xmarkWon = winningSequences.some((seq) => deepEqual(seq, xmarkMem));
-    let circleWon = winningSequences.some((seq) => deepEqual(seq, circleMem));
-
-    console.log(`xmark: ${xmarkWon}`);
-    console.log(`circle: ${circleWon}`);
-    
-    if (xmarkWon) {
-        alert("X mark won!!");
-    } else if (circleWon) {
-        alert("Circle mark won");
+    else {
+        const btn = event.target;
+        const logoElement = btn.children[0];
+        console.log(logoElement);
+        logoElement.classList.add('animate-bounce');
+        let timeOut = setTimeout(() => {
+            logoElement.classList.remove('animate-bounce');
+        }, 3000);
     }
-}
+});
 
-function declareDraw() {
-    alert("Draw!!!");
-}
+let clickCount = 0;
 
-cellBlocks.forEach((cell) => {
-    cell.addEventListener('click', (e) => {
-        const cellFilled = e.target.getAttribute('data-exist');
-
-        if (cellFilled === 'false') {
-            e.target.appendChild(
-                getIconContainer(currentIcon)
-            );
-            const dataLocationOfCell = e.target.getAttribute('data');
-            postMem(currentIcon, dataLocationOfCell);
-
-            checkForWinner();
-            clickCount++;
-
-            if (clickCount >= 9) {
-                declareDraw();
-            }
-            toggleIcon();
-        }
-
-        e.target.setAttribute('data-exist', 'true');
-    });
+ordinateNodes.forEach(ordinateNode => {
+    ordinateNode.addEventListener('click', implementOrdinateNodeLogic);
 });
